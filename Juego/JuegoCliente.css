@@ -1,0 +1,17 @@
+#miCanvas { border: solid 1px #ccc;  width: 600px; height: 400px;}
+
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+.contenedor-canvas {
+    display: grid;
+    place-items: center;
+    height: 100vh;
+}
+
+canvas {
+    width: 600px;
+    height: 400px;
+}
