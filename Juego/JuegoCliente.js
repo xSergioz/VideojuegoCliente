@@ -4,6 +4,8 @@ window.onload = function () {
 	const TOPIZQUIERDA = 0;
 	const TOPARRIBA = 0;
 	const TOPABAJO = 473;
+    const gravedad = 0;
+    const Vsalto = 15;
 
     let x = 0;
     let y = 100;
@@ -19,14 +21,15 @@ window.onload = function () {
 
     let xIzquierda, xDerecha;
     let salto;
+    let saltando = false;
 
     function Thorfinn (x_, y_) {
 
         this.x = x_;
         this.y = y_;
-        this.animacionThorfinn = [[9,211],[31,211]];
-        this.velocidad = 2;
-        this.tamañoX = 20;
+        this.animacionThorfinn = [[9,211],[31,211],[6,271],[62,271],[117,271],[172,271],[230,271],[288,271]];
+        this.velocidad = 1;
+        this.tamañoX = 22;
         this.tamañoY = 43;
     }
 
@@ -37,7 +40,7 @@ window.onload = function () {
 			
 			this.x = TOPEDERECHA;   
 		}
-        this.animacionThorfinn =[[5,271],[61,271],[115,271],[170,271],[228,271],[286,271]];
+        this.animacionThorfinn = [[6,271],[62,271],[117,271],[172,271],[230,271],[288,271]];
     }
 
     Thorfinn.prototype.generaPosicionIzquierda = function() {
@@ -77,6 +80,25 @@ window.onload = function () {
 
 	}
 
+    function caminarDerechaAnimacion() {
+        
+        posicion = (posicion + 1) % 6;
+    }
+
+    function saltar() {
+
+        if(!saltando) return;
+
+        this.velocidad -= gravedad;
+        this.y -= this.velocidad;
+
+        if (this.y >= 100) {
+            this.y = 100;
+            saltando = false;
+            this.velocidad = 0;
+        }
+
+    }
     function activaMovimiento(evt) {
 
         switch (evt.keyCode) {
@@ -86,7 +108,13 @@ window.onload = function () {
 			  break;
 			case 39:
 			  xDerecha = true;
+              caminarDerechaAnimacion();
 			  break;
+
+            case 32:
+                salto = true;
+                saltar();
+                break;
 		 
 		}
 	}
@@ -102,12 +130,13 @@ window.onload = function () {
 			case 39:
 			  xDerecha = false;
 			  break;
+
+            case 32:
+                salto = false;
+                break;
         }
 	}
 
-    function caminarDerechaAnimacion () {
-        
-    }
 
     document.addEventListener("keydown", activaMovimiento, false);
 	document.addEventListener("keyup", desactivaMovimiento, false);
@@ -122,5 +151,5 @@ window.onload = function () {
 	Thorfinn.prototype.imagen = imagen;
 
 	miThorfinn = new Thorfinn(x, y);
-    id1 = setInterval(crearThorfinn, 1000 / 50);
+    id1 = setInterval(crearThorfinn, 1000 / 100);
 }
