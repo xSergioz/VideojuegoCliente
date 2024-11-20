@@ -17,7 +17,8 @@ window.onload = function () {
 
     let imagen;
     let miThorfinn; 
-    let id1, id2;
+    let id1;
+    let id2;
 
     let xIzquierda, xDerecha;
     let salto;
@@ -27,7 +28,7 @@ window.onload = function () {
 
         this.x = x_;
         this.y = y_;
-        this.animacionThorfinn = [[9,211],[31,211]];
+        this.animacionThorfinn = [[5,202],[26,202]];
         
         this.velocidad = 1;
         this.tamañoX = 22;
@@ -41,7 +42,7 @@ window.onload = function () {
 			
 			this.x = TOPEDERECHA;   
 		}
-        this.animacionThorfinnDerecha = [[6,271],[62,271],[117,271],[172,271],[230,271],[288,271]];
+        this.animacionThorfinnDerecha = [[0,261],[56,261],[113,261],[167,261],[224,261],[283,261]];
         this.animacionThorfinn = this.animacionThorfinnDerecha;
     }
 
@@ -53,7 +54,8 @@ window.onload = function () {
 			
 			this.x = TOPIZQUIERDA;	   
 		}
-
+        this.animacionThorfinnIzquierda = [[302,682],[246,682],[188,682],[133,682],[77,682],[21,682]];
+        this.animacionThorfinn = this.animacionThorfinnIzquierda;
 	}
 
     /*Thorfinn.prototype.generaPosicionSalto = function() {
@@ -102,9 +104,22 @@ window.onload = function () {
 
     function animacionThorfinn() {
 
-        if (xDerecha) miThorfinn.animacionThorfinn = miThorfinn.animacionThorfinnDerecha; //posicion = (posicion + 1) % 6;
-        
-        posicion = (posicion + 1) % 6;
+        if (xDerecha) {
+            posicion = (posicion + 1) % 6;
+            miThorfinn.animacionThorfinn = miThorfinn.animacionThorfinnDerecha;
+        }
+        if (xIzquierda) {
+            posicion = (posicion + 1) % 6;
+            miThorfinn.animacionThorfinn = miThorfinn.animacionThorfinnIzquierda;
+        } /*else{
+            this.animacionThorfinn[posicion][0],
+            this.animacionThorfinn[posicion][1];
+        }*/
+        if (xIzquierda == false) {
+            miThorfinn.animacionThorfinn [posicion][0],
+            miThorfinn.animacionThorfinn [posicion][1];
+            posicion = (posicion + 1) % 2;
+        }
     }
 
     /*function saltar() {
