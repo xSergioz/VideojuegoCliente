@@ -22,17 +22,16 @@ window.onload = function () {
 
     let xIzquierda, xDerecha;
     let salto;
-    let saltando = false;
 
     function Thorfinn (x_, y_) {
 
         this.x = x_;
         this.y = y_;
-        this.animacionThorfinn = [[5,202],[26,202]];
-        
+        this.animacionThorfinn = [[4,202],[26,202]];
+        this.animacionIddle = [[4,202],[26,202],[47,202],[69,202]];
         this.velocidad = 1;
-        this.tamañoX = 22;
-        this.tamañoY = 43;
+        this.tamañoX = 23;
+        this.tamañoY = 42;
     }
 
     Thorfinn.prototype.generaPosicionDerecha = function () {
@@ -108,18 +107,14 @@ window.onload = function () {
             posicion = (posicion + 1) % 6;
             miThorfinn.animacionThorfinn = miThorfinn.animacionThorfinnDerecha;
         }
-        if (xIzquierda) {
+        else if (xIzquierda) {
             posicion = (posicion + 1) % 6;
             miThorfinn.animacionThorfinn = miThorfinn.animacionThorfinnIzquierda;
-        } /*else{
-            this.animacionThorfinn[posicion][0],
-            this.animacionThorfinn[posicion][1];
-        }*/
-        if (xIzquierda == false) {
-            miThorfinn.animacionThorfinn [posicion][0],
-            miThorfinn.animacionThorfinn [posicion][1];
-            posicion = (posicion + 1) % 2;
+        } else {
+            miThorfinn.animacionThorfinn = miThorfinn.animacionIddle;
+            posicion = (posicion + 1) % 4;
         }
+
     }
 
     /*function saltar() {
@@ -187,6 +182,6 @@ window.onload = function () {
 	Thorfinn.prototype.imagen = imagen;
 
 	miThorfinn = new Thorfinn(x, y);
-    id1 = setInterval(crearThorfinn, 1000 / 100);
-    id2 = setInterval(animacionThorfinn, 1000 / 8);
+    id1 = setInterval(crearThorfinn, 1000 / 90);
+    id2 = setInterval(animacionThorfinn, 1000 / 10);
 }
