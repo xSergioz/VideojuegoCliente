@@ -4,8 +4,8 @@ window.onload = function () {
     const TOPIZQUIERDA = 0;
     const TOPARRIBA = 0;
     const TOPABAJO = 140;
-    const gravedad = 1.8;
-    let Vsalto = 15;
+    const gravedad = 1.5;
+    let Vsalto = 20;
 
     let x = 0;
     let y = 100;
@@ -16,7 +16,9 @@ window.onload = function () {
 
     let canvas;
 
-    let imagen;
+    let imagen; let imagenSuelo;
+    let xSuelo = -1;
+    let ySuelo = 140;
     let miThorfinn; 
     let id1;
     let id2;
@@ -27,6 +29,24 @@ window.onload = function () {
     let puedeSaltar = true;
 
     let CDTimer;
+
+    let plataformas = [
+        { x: 50, y: 80, ancho: 50, alto: 10 }, //Plataforma 1
+        { x: 200, y: 80, ancho: 60, alto: 10 } //Plataforma 2
+    ];
+
+    function dibujarSuelo(){
+        //const ySuelo = TOPABAJO;
+        const alturaSuelo = canvas.height - ySuelo;
+        const anchoImagen = 100;
+        const cantidadImagen = Math.ceil(canvas.width / anchoImagen);
+        console.log(`Dibujando suelo en posición (0, ${ySuelo}) con tamaño (${500}, ${alturaSuelo})`);
+
+        for (let i = 0; i < cantidadImagen; i++) {
+            ctx.drawImage(imagenSuelo, 3, 1, anchoImagen, alturaSuelo, i * anchoImagen, ySuelo, anchoImagen, alturaSuelo);
+        }
+        //ctx.drawImage(imagenSuelo, -3, 141, 100, alturaSuelo);
+    }
 
     function Thorfinn (x_, y_) {
         this.x = x_;
@@ -63,7 +83,7 @@ window.onload = function () {
 
         enElAire = true;
         Vsalto = 15;
-        
+
         let saltoInterval = setInterval(() => {
             this.y -= Vsalto;
             Vsalto -= gravedad;
@@ -77,6 +97,19 @@ window.onload = function () {
 
                 iniciarCD();
             }
+            plataformas.forEach(plataforma => {
+                if (
+                    this.y + this.tamañoY >= plataforma.y &&
+                    this.y + this.tamañoY <= plataforma.y + plataforma.alto  &&
+                    this.x + this.tamañoX > plataforma.x &&
+                    this.x < plataforma.x + plataforma.ancho
+
+                ) {
+                    this.y = plataforma.y - this.tamañoY;
+                    enElAire = false;
+                    clearInterval(saltoInterval);
+                }
+            });
         }, 20); 
     }
 
@@ -94,8 +127,20 @@ window.onload = function () {
         }, 1000);
     }
 
+    function estaSobrePlataforma(thorfinn) {
+        return plataformas.some(plataforma => {
+            return (
+                thorfinn.y + thorfinn.tamañoY === plataforma.y &&
+                thorfinn.x + thorfinn.tamañoX > plataforma.x &&
+                thorfinn.x < plataforma.x + plataforma.ancho
+            );
+        });
+    }
+
     function crearThorfinn() {
         ctx.clearRect(0, 0, 500, 500);
+        dibujarSuelo();
+        dibujarPlataformas();
 
         if (xDerecha) {
             miThorfinn.generaPosicionDerecha();
@@ -105,12 +150,19 @@ window.onload = function () {
             miThorfinn.generaPosicionIzquierda();
         }
 
-        if (miThorfinn.y > TOPABAJO - miThorfinn.tamañoY) {
+        /*if (miThorfinn.y > TOPABAJO - miThorfinn.tamañoY) {
             miThorfinn.y = TOPABAJO - miThorfinn.tamañoY;
 
             enElAire = false;
            
             miThorfinn.y = alturaSuelo;
+        }*/
+        if (!estaSobrePlataforma(miThorfinn) && miThorfinn.y + miThorfinn.tamañoY < TOPABAJO) {
+            enElAire = true;
+            miThorfinn.y += gravedad;
+        } else if (miThorfinn.y + miThorfinn.tamañoY >= TOPABAJO) {
+            miThorfinn.y = TOPABAJO - miThorfinn.tamañoY;
+            enElAire = false;
         }
 
         ctx.drawImage(miThorfinn.imagen,
@@ -123,6 +175,13 @@ window.onload = function () {
             miThorfinn.tamañoX,
             miThorfinn.tamañoY
         );
+    }
+
+    function dibujarPlataformas() {
+        plataformas.forEach(plataforma => {
+            ctx.fillStyle = "brown";
+            ctx.fillRect(plataforma.x, plataforma.y, plataforma.ancho, plataforma.alto);
+        });
     }
 
     function animacionThorfinn() {
@@ -162,6 +221,11 @@ window.onload = function () {
             case 39:
                 xDerecha = false;
                 break;
+            case 32:
+                if (enElAire && !puedeSaltar) {
+                    miThorfinn.generaPosicionSalto();
+                }
+                break;
         }
     }
 
@@ -173,6 +237,9 @@ window.onload = function () {
 
     imagen = new Image();
     imagen.src = "../Juego/Assets/img/spriteThorfinn.png";
+
+    imagenSuelo = new Image();
+    imagenSuelo.src = "../Juego/Assets/img/imagenSueloyPlataforma.png";
 
     Thorfinn.prototype.imagen = imagen;
 
