@@ -23,7 +23,8 @@ window.onload = function () {
     let id1;
     let id2;
 
-    let xIzquierda, xDerecha;
+    let xIzquierda, xDerecha, Ataque;
+    let vida;
     let salto;
     let enElAire = false;
     let puedeSaltar = true;
@@ -40,7 +41,6 @@ window.onload = function () {
         const alturaSuelo = canvas.height - ySuelo;
         const anchoImagen = 100;
         const cantidadImagen = Math.ceil(canvas.width / anchoImagen);
-        console.log(`Dibujando suelo en posición (0, ${ySuelo}) con tamaño (${500}, ${alturaSuelo})`);
 
         for (let i = 0; i < cantidadImagen; i++) {
             ctx.drawImage(imagenSuelo, 3, 1, anchoImagen, alturaSuelo, i * anchoImagen, ySuelo, anchoImagen, alturaSuelo);
@@ -53,9 +53,11 @@ window.onload = function () {
         this.y = y_;
         this.animacionThorfinn = [[4,202],[26,202]];
         this.animacionIddle = [[4,202],[26,202],[47,202],[69,202]];
+        this.animacionIddleIzquierda = [[88,1045],[66,1045],[44,1045],[22,1045]];
         this.velocidad = 1;
         this.tamañoX = 23;
         this.tamañoY = 42;
+        this.vida = 3;
     }
 
     Thorfinn.prototype.generaPosicionDerecha = function () {
@@ -74,6 +76,16 @@ window.onload = function () {
         }
         this.animacionThorfinnIzquierda = [[302,682],[246,682],[188,682],[133,682],[77,682],[21,682]];
         this.animacionThorfinn = this.animacionThorfinnIzquierda;
+    }
+
+    Thorfinn.prototype.generaAtaqueDerecha = function() {
+        this.animacionThorfinnAtaqueDerecha = [[2,367],[35,367],[71,367],[117,367],[158,367]];
+        this.animacionThorfinn = this.animacionThorfinnAtaqueDerecha;
+    }
+
+    Thorfinn.prototype.generaAtaqueIzquierda = function() {
+        this.animacionThorfinnAtaqueIzquierda = [[176,784],[142,784],[87,784],[44,784],[18,784]];
+        this.animacionThorfinn = this.animacionThorfinnAtaqueIzquierda;
     }
 
     Thorfinn.prototype.generaPosicionSalto = function () {
@@ -150,6 +162,14 @@ window.onload = function () {
             miThorfinn.generaPosicionIzquierda();
         }
 
+        if (Ataque && xDerecha) {
+            miThorfinn.generaAtaqueDerecha();
+        }
+
+        if (Ataque && xIzquierda){
+            miThorfinn.generaAtaqueIzquierda();
+        }
+
         /*if (miThorfinn.y > TOPABAJO - miThorfinn.tamañoY) {
             miThorfinn.y = TOPABAJO - miThorfinn.tamañoY;
 
@@ -191,6 +211,15 @@ window.onload = function () {
         } else if (xIzquierda) {
             posicion = (posicion + 1) % 6;
             miThorfinn.animacionThorfinn = miThorfinn.animacionThorfinnIzquierda;
+        }else if (Ataque && xDerecha){
+            posicion = (posicion + 1) % 5;
+            miThorfinn.animacionThorfinn = miThorfinn.animacionAtaqueDerecha;
+        }else if (Ataque && xIzquierda){
+            posicion = (posicion + 1) % 5;
+            miThorfinn.animacionThorfinn = miThorfinn.animacionThorfinnAtaqueIzquierda;
+        }else if (Ataque){
+            posicion = (posicion + 1) % 5;
+            miThorfinn.animacionThorfinn = miThorfinn.animacionThorfinnAtaqueDerecha;
         } else {
             miThorfinn.animacionThorfinn = miThorfinn.animacionIddle;
             posicion = (posicion + 1) % 4;
@@ -205,10 +234,13 @@ window.onload = function () {
             case 39:
                 xDerecha = true;
                 break;
-            case 32:
+            case 38:
                 if (!enElAire && puedeSaltar) {
                     miThorfinn.generaPosicionSalto();
                 }
+                break;
+            case 32:
+                Ataque = true;
                 break;
         }
     }
@@ -221,10 +253,13 @@ window.onload = function () {
             case 39:
                 xDerecha = false;
                 break;
-            case 32:
+            case 38:
                 if (enElAire && !puedeSaltar) {
                     miThorfinn.generaPosicionSalto();
                 }
+                break;
+            case 32:
+                Ataque = false;
                 break;
         }
     }
