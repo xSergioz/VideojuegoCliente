@@ -28,6 +28,7 @@ window.onload = function () {
     let salto;
     let enElAire = false;
     let puedeSaltar = true;
+    let ultimaDireccion;
 
     let CDTimer;
 
@@ -53,7 +54,7 @@ window.onload = function () {
         this.y = y_;
         this.animacionThorfinn = [[4,202],[26,202]];
         this.animacionIddle = [[4,202],[26,202],[47,202],[69,202]];
-        this.animacionIddleIzquierda = [[88,1045],[66,1045],[44,1045],[22,1045]];
+        this.animacionIddleIzquierda = [[88,1048],[66,1048],[44,1048],[22,1048]];
         this.velocidad = 1;
         this.tamañoX = 23;
         this.tamañoY = 42;
@@ -79,12 +80,12 @@ window.onload = function () {
     }
 
     Thorfinn.prototype.generaAtaqueDerecha = function() {
-        this.animacionThorfinnAtaqueDerecha = [[2,367],[35,367],[71,367],[117,367],[158,367]];
+        this.animacionThorfinnAtaqueDerecha = [[1,362],[34,362],[70,362],[116,362],[157,362]];
         this.animacionThorfinn = this.animacionThorfinnAtaqueDerecha;
     }
 
     Thorfinn.prototype.generaAtaqueIzquierda = function() {
-        this.animacionThorfinnAtaqueIzquierda = [[176,784],[142,784],[87,784],[44,784],[18,784]];
+        this.animacionThorfinnAtaqueIzquierda = [[176,781],[142,781],[87,781],[44,781],[18,781]];
         this.animacionThorfinn = this.animacionThorfinnAtaqueIzquierda;
     }
 
@@ -168,7 +169,16 @@ window.onload = function () {
 
         if (Ataque && xIzquierda){
             miThorfinn.generaAtaqueIzquierda();
+        } else {
+            if (Ataque) {
+                miThorfinn.generaAtaqueDerecha();
+            }
         }
+
+        if (Ataque && ultimaDireccion === "izquierda") {
+            miThorfinn.generaAtaqueIzquierda();
+        }
+
 
         /*if (miThorfinn.y > TOPABAJO - miThorfinn.tamañoY) {
             miThorfinn.y = TOPABAJO - miThorfinn.tamañoY;
@@ -217,12 +227,15 @@ window.onload = function () {
         }else if (Ataque && xIzquierda){
             posicion = (posicion + 1) % 5;
             miThorfinn.animacionThorfinn = miThorfinn.animacionThorfinnAtaqueIzquierda;
-        }else if (Ataque){
-            posicion = (posicion + 1) % 5;
-            miThorfinn.animacionThorfinn = miThorfinn.animacionThorfinnAtaqueDerecha;
         } else {
-            miThorfinn.animacionThorfinn = miThorfinn.animacionIddle;
-            posicion = (posicion + 1) % 4;
+            if (ultimaDireccion === "izquierda") {
+                posicion = (posicion + 1) % 4;
+                miThorfinn.animacionThorfinn = miThorfinn.animacionIddleIzquierda;
+            } else {
+                posicion = (posicion + 1) % 4;
+                miThorfinn.animacionThorfinn = miThorfinn.animacionIddle;
+            }
+            //posicion = (posicion + 1) % 4;
         }
     }
 
@@ -230,9 +243,11 @@ window.onload = function () {
         switch (evt.keyCode) {
             case 37: 
                 xIzquierda = true;
+                ultimaDireccion = "izquierda";
                 break;
             case 39:
                 xDerecha = true;
+                ultimaDireccion = "derecha";
                 break;
             case 38:
                 if (!enElAire && puedeSaltar) {
