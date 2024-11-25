@@ -33,8 +33,8 @@ window.onload = function () {
     let CDTimer;
 
     let plataformas = [
-        { x: 50, y: 80, ancho: 50, alto: 10 }, //Plataforma 1
-        { x: 200, y: 80, ancho: 60, alto: 10 } //Plataforma 2
+        { x: 50, y: 70, ancho: 50, alto: 10 }, //Plataforma 1
+        { x: 200, y: 70, ancho: 60, alto: 10 } //Plataforma 2
     ];
 
     function dibujarSuelo(){
@@ -149,6 +149,7 @@ window.onload = function () {
             );
         });
     }
+
 
     function crearThorfinn() {
         ctx.clearRect(0, 0, 500, 500);
@@ -326,9 +327,9 @@ window.onload = function () {
 
     Thorfinn.prototype.imagen = imagen;
 
+
     miThorfinn = new Thorfinn(x, y);
     id1 = setInterval(crearThorfinn, 1000 / 70);
     id2 = setInterval(animacionThorfinn, 1000 / 8);
-
-
+    
 }
