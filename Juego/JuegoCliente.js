@@ -55,7 +55,7 @@ window.onload = function () {
         this.animacionThorfinn = [[4,202],[26,202]];
         this.animacionIddle = [[4,202],[26,202],[47,202],[69,202]];
         this.animacionIddleIzquierda = [[88,1048],[66,1048],[44,1048],[22,1048]];
-        this.velocidad = 1;
+        this.velocidad = 1.5;
         this.tamañoX = 23;
         this.tamañoY = 42;
         this.vida = 3;
@@ -208,9 +208,24 @@ window.onload = function () {
     }
 
     function dibujarPlataformas() {
+        const anchoImagen = 100; // Ancho del fragmento del sprite del suelo
+    
         plataformas.forEach(plataforma => {
-            ctx.fillStyle = "brown";
-            ctx.fillRect(plataforma.x, plataforma.y, plataforma.ancho, plataforma.alto);
+            const cantidadImagen = Math.ceil(plataforma.ancho / anchoImagen);
+    
+            for (let i = 0; i < cantidadImagen; i++) {
+                const xDestino = plataforma.x + i * anchoImagen;
+                const anchoDibujo = Math.min(anchoImagen, plataforma.x + plataforma.ancho - xDestino);
+    
+                ctx.drawImage(
+                    imagenSuelo,
+                    3, 1,
+                    anchoDibujo, 10,
+                    xDestino,
+                    plataforma.y,
+                    anchoDibujo, 10
+                );
+            }
         });
     }
 
@@ -255,8 +270,9 @@ window.onload = function () {
                 }
                 break;
             case 32:
-                Ataque = true;
-                break;
+                if (!xIzquierda && !xDerecha) {
+                    Ataque = true;
+                }
         }
     }
 
@@ -279,8 +295,25 @@ window.onload = function () {
         }
     }
 
+    function toggleMusica(){
+        let musica = document.getElementById("musicaFondo");
+        let boton = document.getElementById("botonMusica");
+
+        if (musica.paused) {
+            musica.play();
+            boton.textContent = "Pausar Música";
+        } else {
+            musica.pause();
+            boton.textContent = "Iniciar Música";
+        }
+
+        let botonMusica = document.getElementById("botonMusica");
+        botonMusica.addEventListener("click", toggleMusica);
+    }
+
     document.addEventListener("keydown", activaMovimiento, false);
     document.addEventListener("keyup", desactivaMovimiento, false);
+    document.getElementById("botonMusica").addEventListener("click", toggleMusica);
 
     canvas = document.getElementById("miCanvas");
     ctx = canvas.getContext("2d");
@@ -294,6 +327,8 @@ window.onload = function () {
     Thorfinn.prototype.imagen = imagen;
 
     miThorfinn = new Thorfinn(x, y);
-    id1 = setInterval(crearThorfinn, 1000 / 90);
-    id2 = setInterval(animacionThorfinn, 1000 / 10);
+    id1 = setInterval(crearThorfinn, 1000 / 70);
+    id2 = setInterval(animacionThorfinn, 1000 / 8);
+
+
 }
