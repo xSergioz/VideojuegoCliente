@@ -7,7 +7,7 @@ body {
     background-position: center;
 }
 
-#miCanvas { border: solid 1px #ccc;  width: 950px; height: 500px; background-image: url("../Juego/Assets/img/fondo.jpg");}
+#miCanvas { border: solid 2px #ccc;  width: 950px; height: 500px; background-image: url("../Juego/Assets/img/fondo.jpg");}
 
 html, body {
     height: 100%;
@@ -18,4 +18,12 @@ html, body {
     display: grid;
     place-items: center;
     height: 100vh;
+}
+
+#botonReinicio {
+    margin-top: 15px;
+}
+
+#records {
+    text-align: center;
 }

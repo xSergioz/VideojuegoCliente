@@ -18,9 +18,19 @@
 <div class="contenedor-canvas">
   <canvas class="container-canvas" id="miCanvas"></canvas>
 </div>
-<button id="botonReiniciar">Iniciar / Reiniciar Juego</button>
+
+<div id="mensajeFin" style="display: none; font-size: 20px; color: red; text-align: center;">
+  
+</div>
+<button id="botonReiniciar" style="display: none;">Reiniciar Juego</button>
 
 <audio id="musicaFondo" src="../Juego/Assets/audios/musicaFondo.mp3" type="audio/mp3"></audio>
+
+<div id="records">
+  <h2>Mejores tiempos</h2>
+  <ul id="recordsList">
+  </ul>
+</div>
 
 <script src="JuegoCliente.js"></script>
 </body>

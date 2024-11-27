@@ -1,9 +1,51 @@
+let historialPuntuaciones = [];
+let historialNiveles = [];
+
+function cargarHistorial() {
+    historialPuntuaciones = JSON.parse(localStorage.getItem('historialPuntuaciones')) || [];
+    historialNiveles = JSON.parse(localStorage.getItem('historialNiveles')) || [];
+}
+
+  function guardarHistorial() {
+    localStorage.setItem('historialPuntuaciones', JSON.stringify(historialPuntuaciones));
+}
+
+  function mostrarHistorial() {
+	const recordsList = document.getElementById("recordsList");
+	recordsList.innerHTML = ""; // Limpiar la lista
+  
+	historialPuntuaciones.forEach((puntuacion, index) => {
+	  const recordItem = document.createElement("li");
+	  recordItem.textContent = `Record ${index + 1}: ${puntuacion.toFixed(2).replace('.', ',')} segundos`;
+	  recordsList.appendChild(recordItem);
+	});
+}
+
+function mostrarRecords() {
+	const recordsList = document.getElementById("recordsList");
+  
+	const nuevoRecord = (tiempoFin - tiempoInicio) / 1000; // Convertir a segundos
+  
+	// Verifica si es un nuevo récord
+	if (nuevoRecord > recordTiempo) {
+	  historialPuntuaciones.push(nuevoRecord);
+	  recordTiempo = nuevoRecord;
+  
+	  // Guarda el historial actualizado
+	  localStorage.setItem('historialPuntuaciones', JSON.stringify(historialPuntuaciones));
+	}
+  
+	// Muestra el historial
+	mostrarHistorial();
+}
+
 window.onload = function () {
 
     const TOPEDERECHA = 280;
     const TOPIZQUIERDA = 0;
     const TOPARRIBA = 0;
     const TOPABAJO = 140;
+    const TOPEINFERIORBORRADO = 520;
     const gravedad = 1.5;
     let Vsalto = 20;
 
@@ -14,23 +56,42 @@ window.onload = function () {
     let ctx;
     let posicion = 0;
 
+    cargarHistorial();
+
     let canvas;
 
-    let imagen; let imagenSuelo;
+    let imagen; let imagenSuelo; let imagenFlecha;
     let xSuelo = -1;
     let ySuelo = 140;
     let miThorfinn; 
     let id1;
     let id2;
+    let id3;
+    let id4;
+    let id5;
 
     let xIzquierda, xDerecha, Ataque;
-    let vida;
+    let vida = 3;
     let salto;
     let enElAire = false;
     let puedeSaltar = true;
     let ultimaDireccion;
 
     let CDTimer;
+
+    const flechas = [];
+    let nivel = 1;
+
+    let tiempoInicio = Date.now();
+    let tiempoFin = null;
+
+	let recordTiempo = 0;
+    let Vflechas = 1;
+
+    let velocidadCaida = 1; // Velocidad inicial de las flechas
+    let frecuenciaCaida = 1000; // Frecuencia inicial para la creación de flechas (en milisegundos)
+    let intervaloJuego;
+    
 
     let plataformas = [
         { x: 50, y: 70, ancho: 50, alto: 10 }, //Plataforma 1
@@ -59,6 +120,51 @@ window.onload = function () {
         this.tamañoX = 23;
         this.tamañoY = 42;
         this.vida = 3;
+    }
+
+    function Flecha (x__, y__, velocidad__) {
+        this.x = x__;
+        this.y = y__;
+        this.ancho = 10;
+        this.alto = 30;
+        this.velocidad = velocidad__;
+    }
+    
+
+    function mostrarHistorial() {
+        const recordsList = document.getElementById("recordsList");
+        recordsList.innerHTML = ""; // Limpiar la lista
+    
+        historialPuntuaciones.forEach((puntuacion, index) => {
+            const recordItem = document.createElement("li");
+            recordItem.textContent = `Intento ${index + 1}: Puntuación: ${puntuacion.toFixed(2).replace('.', ',')} segundos, Nivel: ${historialNiveles[index]}`;
+            recordsList.appendChild(recordItem);
+        });
+    }
+
+    function mostrarRecords() {
+        const recordsList = document.getElementById("recordsList");
+        const nuevoRecord = (tiempoFin - tiempoInicio) / 1000; // Convertir a segundos
+    
+        // Verifica si es un nuevo récord
+        if (nuevoRecord > recordTiempo) {
+            historialPuntuaciones.push(nuevoRecord);
+            recordTiempo = nuevoRecord;
+    
+            // Guarda el historial actualizado
+            localStorage.setItem('historialPuntuaciones', JSON.stringify(historialPuntuaciones));
+        }
+        // Muestra el historial
+        mostrarHistorial();
+    }
+
+    function crearFlechas() {
+        const flecha = new Flecha(
+            Math.random() * (TOPEDERECHA - 5) + 5,
+            0,
+            Vflechas
+        );
+        flechas.push(flecha);
     }
 
     Thorfinn.prototype.generaPosicionDerecha = function () {
@@ -150,11 +256,41 @@ window.onload = function () {
         });
     }
 
+    function actualizarFlechas() {
+        flechas.forEach((flecha, i) => {
+            flecha.y += flecha.velocidad;
+    
+            if (detectarColision(flecha, miThorfinn)) {
+                miThorfinn.vida--;
+                flechas.splice(i, 1);
+                if (miThorfinn.vida <= 0) terminarJuego();
+            }
+    
+            if (flecha.y > 500) flechas.splice(i, 1);
+        });
+    }
+
+    function detectarColision(flecha, thorfinn) {
+        return (
+            flecha.x < thorfinn.x + thorfinn.tamañoX &&
+            flecha.x + flecha.ancho > thorfinn.x &&
+            flecha.y < thorfinn.y + thorfinn.tamañoY &&
+            flecha.y + flecha.alto > thorfinn.y
+        );
+    }
+
+    function dibujarFlechas() {
+        flechas.forEach(flecha => {
+            ctx.drawImage(imagenFlecha, flecha.x, flecha.y, flecha.ancho, flecha.alto);
+        });
+    }
 
     function crearThorfinn() {
         ctx.clearRect(0, 0, 500, 500);
         dibujarSuelo();
         dibujarPlataformas();
+        dibujarFlechas();
+
 
         if (xDerecha) {
             miThorfinn.generaPosicionDerecha();
@@ -180,14 +316,6 @@ window.onload = function () {
             miThorfinn.generaAtaqueIzquierda();
         }
 
-
-        /*if (miThorfinn.y > TOPABAJO - miThorfinn.tamañoY) {
-            miThorfinn.y = TOPABAJO - miThorfinn.tamañoY;
-
-            enElAire = false;
-           
-            miThorfinn.y = alturaSuelo;
-        }*/
         if (!estaSobrePlataforma(miThorfinn) && miThorfinn.y + miThorfinn.tamañoY < TOPABAJO) {
             enElAire = true;
             miThorfinn.y += gravedad;
@@ -296,6 +424,76 @@ window.onload = function () {
         }
     }
 
+    function loopJuego() {
+        crearThorfinn();
+        actualizarFlechas();
+        dibujarFlechas();
+    }
+
+    function actualizarDificultad() {
+        const tiempoTranscurrido = (new Date() - tiempoInicio) / 1000; //Tiempo transcurrido en segundos
+
+        // Aumentar nivel cada 30 segundos
+        if (tiempoTranscurrido >= nivel * 30) {
+            nivel++;
+            console.log(`Nivel aumentado a: ${nivel}`);
+        
+            // Aumenta la dificultad cada vez que el nivel sube
+            velocidadCaida += 0.2; // Aumenta la velocidad de caída
+            frecuenciaCaida -= 100; // Reduce el tiempo entre cada flecha
+
+            // Si ya tienes un intervalo que crea las flechas, actualízalo
+            clearInterval(id5);// Detén el intervalo anterior
+            id5 = setInterval(crearFlechas, frecuenciaCaida); // Crea las flechas con nueva frecuencia
+            
+        }
+    }
+
+    function guardarRecords() {
+        let puntuacionMaxima = localStorage.getItem("puntuacionMaxima") || 0;
+        let nivelMaximo = localStorage.getItem("nivelMaximo") || 1;
+
+        if (nivel > nivelMaximo) {
+            localStorage.setItem("nivelMaximo", nivel);
+        }
+        if (tiempoFin < puntuacionMaxima || puntuacionMaxima === 0) {
+            localStorage.setItem("puntuacionMaxima", tiempoFin);
+        }
+    }
+
+    function terminarJuego() {
+        clearInterval(intervaloJuego); //Detener todos los intervalos
+        tiempoFin = Date.now(); //Capturar el tiempo de finalización
+        const tiempoJugado = (tiempoFin - tiempoInicio) / 1000;//Calcular el tiempo jugado
+    
+        // Guardar puntuación en el historial
+        historialPuntuaciones.push(tiempoJugado);
+        historialNiveles.push(nivel);
+        guardarHistorial();
+        mostrarFinDelJuego(tiempoJugado);
+        mostrarBotonReinicio();
+        clearInterval(id1);
+        clearInterval(id2);
+        clearInterval(id3);
+        clearInterval(id4);
+        clearInterval(id5);
+
+    }
+
+    function mostrarFinDelJuego(tiempoJugado) {
+        const mensajeFin = document.getElementById("mensajeFin");
+        mensajeFin.textContent = `¡Fin del juego! Duraste ${tiempoJugado.toFixed(2)} segundos.`;
+        mensajeFin.style.display = "block";
+    }
+
+    function mostrarBotonReinicio() {
+        const botonReinicio = document.getElementById("botonReiniciar");
+        if (botonReinicio) {
+          botonReinicio.style.display = "block";
+          botonReinicio.addEventListener("click", reiniciarJuego);
+        }
+    }
+
     function toggleMusica(){
         let musica = document.getElementById("musicaFondo");
         let boton = document.getElementById("botonMusica");
@@ -312,6 +510,29 @@ window.onload = function () {
         botonMusica.addEventListener("click", toggleMusica);
     }
 
+    function reiniciarJuego() {
+        nivel = 1;
+        Vflechas = 1;
+        flechas.length = 0;
+        miThorfinn.vida = 3;
+        enElAire = false;
+        puedeSaltar = true;
+        tiempoInicio = Date.now();
+    
+        
+        ctx.clearRect(0, 0, 500, 500);
+    
+        // Re-crear los intervalos del juego
+        id1 = setInterval(crearThorfinn, 1000 / 70);
+        id2 = setInterval(animacionThorfinn, 1000 / 8);
+        id3 = setInterval(loopJuego, 1000 / 60);
+        id4 = setInterval(actualizarDificultad, 1000);
+        id5 = setInterval(crearFlechas, frecuenciaCaida);
+    
+        // Ocultar el mensaje de fin del juego
+        document.getElementById("mensajeFin").style.display = "none";
+    }
+
     document.addEventListener("keydown", activaMovimiento, false);
     document.addEventListener("keyup", desactivaMovimiento, false);
     document.getElementById("botonMusica").addEventListener("click", toggleMusica);
@@ -325,11 +546,15 @@ window.onload = function () {
     imagenSuelo = new Image();
     imagenSuelo.src = "../Juego/Assets/img/imagenSueloyPlataforma.png";
 
-    Thorfinn.prototype.imagen = imagen;
+    imagenFlecha = new Image();
+    imagenFlecha.src = "../Juego/Assets/img/flecha.png";
 
+    Thorfinn.prototype.imagen = imagen;
 
     miThorfinn = new Thorfinn(x, y);
     id1 = setInterval(crearThorfinn, 1000 / 70);
     id2 = setInterval(animacionThorfinn, 1000 / 8);
-    
+    id3 = setInterval(loopJuego, 1000 / 60);
+    id4 = setInterval(actualizarDificultad, 1000);
+    id5 = setInterval(crearFlechas, frecuenciaCaida);
 }
