@@ -1,44 +1,3 @@
-let historialPuntuaciones = [];
-let historialNiveles = [];
-
-function cargarHistorial() {
-    historialPuntuaciones = JSON.parse(localStorage.getItem('historialPuntuaciones')) || [];
-    historialNiveles = JSON.parse(localStorage.getItem('historialNiveles')) || [];
-}
-
-  function guardarHistorial() {
-    localStorage.setItem('historialPuntuaciones', JSON.stringify(historialPuntuaciones));
-}
-
-  function mostrarHistorial() {
-	const recordsList = document.getElementById("recordsList");
-	recordsList.innerHTML = ""; // Limpiar la lista
-  
-	historialPuntuaciones.forEach((puntuacion, index) => {
-	  const recordItem = document.createElement("li");
-	  recordItem.textContent = `Record ${index + 1}: ${puntuacion.toFixed(2).replace('.', ',')} segundos`;
-	  recordsList.appendChild(recordItem);
-	});
-}
-
-function mostrarRecords() {
-	const recordsList = document.getElementById("recordsList");
-  
-	const nuevoRecord = (tiempoFin - tiempoInicio) / 1000; // Convertir a segundos
-  
-	// Verifica si es un nuevo récord
-	if (nuevoRecord > recordTiempo) {
-	  historialPuntuaciones.push(nuevoRecord);
-	  recordTiempo = nuevoRecord;
-  
-	  // Guarda el historial actualizado
-	  localStorage.setItem('historialPuntuaciones', JSON.stringify(historialPuntuaciones));
-	}
-  
-	// Muestra el historial
-	mostrarHistorial();
-}
-
 window.onload = function () {
 
     const TOPEDERECHA = 280;
@@ -47,7 +6,9 @@ window.onload = function () {
     const TOPABAJO = 140;
     const TOPEINFERIORBORRADO = 520;
     const gravedad = 1.5;
-    let Vsalto = 20;
+    let Vsalto;
+    let historialPuntuaciones = [];
+    let historialNiveles = [];
 
     let x = 0;
     let y = 100;
@@ -56,19 +17,13 @@ window.onload = function () {
     let ctx;
     let posicion = 0;
 
-    cargarHistorial();
-
     let canvas;
 
     let imagen; let imagenSuelo; let imagenFlecha;
     let xSuelo = -1;
     let ySuelo = 140;
     let miThorfinn; 
-    let id1;
-    let id2;
-    let id3;
-    let id4;
-    let id5;
+    let id1, id2, id3, id4, id5;
 
     let xIzquierda, xDerecha, Ataque;
     let vida = 3;
@@ -85,17 +40,72 @@ window.onload = function () {
     let tiempoInicio = Date.now();
     let tiempoFin = null;
 
-	let recordTiempo = 0;
+	let recordTiempo;
     let Vflechas = 1;
 
-    let velocidadCaida = 1; // Velocidad inicial de las flechas
-    let frecuenciaCaida = 1000; // Frecuencia inicial para la creación de flechas (en milisegundos)
+    let velocidadCaida = 1; //Velocidad inicial de las flechas
+    let frecuenciaCaida = 1000; //Frecuencia inicial para la creación de flechas (en milisegundos)
     let intervaloJuego;
+    let partidaRegistrada = false;
+    let partidaTerminada = false;
+
+
+    function cargarHistorial() {
+        historialPuntuaciones = JSON.parse(localStorage.getItem('historialPuntuaciones')) || [];
+        historialNiveles = JSON.parse(localStorage.getItem('historialNiveles')) || [];
+    }
+
+    function guardarHistorial() {
+        //Un Set para eliminar duplicados
+        historialPuntuaciones = [...new Set(historialPuntuaciones)];
+        historialNiveles = [...new Set(historialNiveles)];
+    
+        localStorage.setItem('historialPuntuaciones', JSON.stringify(historialPuntuaciones));
+        localStorage.setItem('historialNiveles', JSON.stringify(historialNiveles));
+    }
+
+    function mostrarHistorial() {
+        const recordsList = document.getElementById("recordsList");
+        recordsList.innerHTML = ""; //Limpiar la lista
+    
+        //Obtener los 5 mejores tiempos
+        const mejoresTiempos = historialPuntuaciones
+            .map((puntuacion, index) => ({
+                tiempo: puntuacion,
+                nivel: historialNiveles[index],
+            }))
+            .sort((a, b) => a.tiempo - b.tiempo) // Ordenar de menor a mayor tiempo
+            .slice(0, 5); // Mostrar solo los 5 mejores
+    
+        mejoresTiempos.forEach((record, index) => {
+            const recordItem = document.createElement("li");
+            const minutos = Math.floor(record.tiempo / 60);
+            const segundos = (record.tiempo % 60).toFixed(2);
+            recordItem.textContent = `#${index + 1}: Tiempo: ${minutos}m ${segundos}s, Nivel: ${record.nivel}`;
+            recordsList.appendChild(recordItem);
+        });
+    }
     
 
+    function mostrarRecords() {
+    
+        const nuevoRecord = (tiempoFin - tiempoInicio) / 1000; // Convertir a segundos
+    
+        historialPuntuaciones.push(nuevoRecord);
+        historialNiveles.push(nivel);
+    
+        // Actualizar el récord si es el mejor tiempo
+        if (nuevoRecord > recordTiempo) {
+            recordTiempo = nuevoRecord;
+        }
+    
+        guardarHistorial(); // Guardar cambios
+        mostrarHistorial(); // Mostrar el historial actualizado
+    }
+
     let plataformas = [
-        { x: 50, y: 70, ancho: 50, alto: 10 }, //Plataforma 1
-        { x: 200, y: 70, ancho: 60, alto: 10 } //Plataforma 2
+        { x: 50, y: 75, ancho: 50, alto: 10 }, //Plataforma 1
+        { x: 200, y: 75, ancho: 60, alto: 10 } //Plataforma 2
     ];
 
     function dibujarSuelo(){
@@ -128,34 +138,6 @@ window.onload = function () {
         this.ancho = 10;
         this.alto = 30;
         this.velocidad = velocidad__;
-    }
-    
-
-    function mostrarHistorial() {
-        const recordsList = document.getElementById("recordsList");
-        recordsList.innerHTML = ""; // Limpiar la lista
-    
-        historialPuntuaciones.forEach((puntuacion, index) => {
-            const recordItem = document.createElement("li");
-            recordItem.textContent = `Intento ${index + 1}: Puntuación: ${puntuacion.toFixed(2).replace('.', ',')} segundos, Nivel: ${historialNiveles[index]}`;
-            recordsList.appendChild(recordItem);
-        });
-    }
-
-    function mostrarRecords() {
-        const recordsList = document.getElementById("recordsList");
-        const nuevoRecord = (tiempoFin - tiempoInicio) / 1000; // Convertir a segundos
-    
-        // Verifica si es un nuevo récord
-        if (nuevoRecord > recordTiempo) {
-            historialPuntuaciones.push(nuevoRecord);
-            recordTiempo = nuevoRecord;
-    
-            // Guarda el historial actualizado
-            localStorage.setItem('historialPuntuaciones', JSON.stringify(historialPuntuaciones));
-        }
-        // Muestra el historial
-        mostrarHistorial();
     }
 
     function crearFlechas() {
@@ -229,7 +211,7 @@ window.onload = function () {
                     clearInterval(saltoInterval);
                 }
             });
-        }, 20); 
+        }, 15); 
     }
 
     function iniciarCD() {
@@ -428,6 +410,9 @@ window.onload = function () {
         crearThorfinn();
         actualizarFlechas();
         dibujarFlechas();
+        if (partidaTerminada) {
+            mostrarBotonReinicio();
+        }
     }
 
     function actualizarDificultad() {
@@ -462,25 +447,33 @@ window.onload = function () {
     }
 
     function terminarJuego() {
-        clearInterval(intervaloJuego); //Detener todos los intervalos
-        tiempoFin = Date.now(); //Capturar el tiempo de finalización
-        const tiempoJugado = (tiempoFin - tiempoInicio) / 1000;//Calcular el tiempo jugado
+        if (partidaTerminada) return; //Evita múltiples ejecuciones
+        partidaTerminada = true; //Marca la partida como terminada
     
-        // Guardar puntuación en el historial
+        clearInterval(intervaloJuego); //Detener todos los intervalos
+        tiempoFin = Date.now(); //Captura el tiempo de finalización
+        const tiempoJugado = (tiempoFin - tiempoInicio) / 1000; //Calcula el tiempo jugado
+    
+        //Guardar puntuación en el historial
         historialPuntuaciones.push(tiempoJugado);
         historialNiveles.push(nivel);
         guardarHistorial();
+    
+        //Mostrar mensajes y actualizar interfaz
         mostrarFinDelJuego(tiempoJugado);
         mostrarBotonReinicio();
+        mostrarRecords();
+    
+        //Detener intervalos restantes
         clearInterval(id1);
         clearInterval(id2);
         clearInterval(id3);
         clearInterval(id4);
         clearInterval(id5);
-
     }
 
     function mostrarFinDelJuego(tiempoJugado) {
+        partidaTerminada = true;
         const mensajeFin = document.getElementById("mensajeFin");
         mensajeFin.textContent = `¡Fin del juego! Duraste ${tiempoJugado.toFixed(2)} segundos.`;
         mensajeFin.style.display = "block";
@@ -511,28 +504,74 @@ window.onload = function () {
     }
 
     function reiniciarJuego() {
-        nivel = 1;
-        Vflechas = 1;
-        flechas.length = 0;
-        miThorfinn.vida = 3;
-        enElAire = false;
-        puedeSaltar = true;
-        tiempoInicio = Date.now();
+        console.log("Reiniciando juego...");
     
-        
-        ctx.clearRect(0, 0, 500, 500);
+        //Verifica si la partida ya está terminada
+        if (partidaTerminada) {
+            console.log("La partida ya ha terminado, reiniciando.");
+            
+            //Detener todos los intervalos activos antes de iniciar nuevos
+            clearInterval(id1);
+            clearInterval(id2);
+            clearInterval(id3);
+            clearInterval(id4);
+            clearInterval(id5);
+            console.log("Intervalos detenidos.");
     
-        // Re-crear los intervalos del juego
-        id1 = setInterval(crearThorfinn, 1000 / 70);
-        id2 = setInterval(animacionThorfinn, 1000 / 8);
-        id3 = setInterval(loopJuego, 1000 / 60);
-        id4 = setInterval(actualizarDificultad, 1000);
-        id5 = setInterval(crearFlechas, frecuenciaCaida);
+            //Reiniciar los valores del juego
+            nivel = 1;
+            Vflechas = 1;
+            flechas.length = 0; //Eliminar todas las flechas
+            miThorfinn.vida = 3;
+            enElAire = false;
+            puedeSaltar = true;
+            tiempoInicio = Date.now();
+            partidaTerminada = false; //Asegúrate de que esta línea está en ejecución
     
-        // Ocultar el mensaje de fin del juego
-        document.getElementById("mensajeFin").style.display = "none";
+            //Limpiar el canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            console.log("Canvas limpiado.");
+    
+            //Re-crear los intervalos del juego
+            id1 = setInterval(crearThorfinn, 1000 / 70);
+            id2 = setInterval(animacionThorfinn, 1000 / 8);
+            id3 = setInterval(loopJuego, 1000 / 60);
+            id4 = setInterval(actualizarDificultad, 1000);
+            id5 = setInterval(crearFlechas, frecuenciaCaida);
+            console.log("Nuevos intervalos creados.");
+    
+            //Ocultar el mensaje de fin del juego
+            const mensajeFin = document.getElementById("mensajeFin");
+            mensajeFin.style.display = "none";
+            console.log("Mensaje de fin del juego oculto.");
+    
+            //Ocultar el botón de reinicio
+            const botonReinicio = document.getElementById("botonReiniciar");
+            if (botonReinicio) {
+                botonReinicio.style.display = "none"; // Oculta el botón de reinicio después de reiniciar
+                console.log("Botón de reinicio ocultado.");
+            }
+        }
     }
-
+    
+    
+    //Verifica que la función que termina el juego también esté gestionando correctamente el estado de partidaTerminada
+    function finDelJuego() {
+        partidaTerminada = true; //Aquí deberías asegurarte de que esta línea esté ejecutándose correctamente
+        console.log("Partida terminada.");
+    
+        //Mostrar mensaje de fin del juego
+        const mensaje = document.getElementById("mensajeFin");
+        mensaje.innerHTML = "¡Juego terminado!";
+        mensaje.style.display = "block";
+        console.log("Mensaje de fin del juego mostrado.");
+    
+        mostrarBotonReinicio(); //Mostrar el botón de reiniciar
+        console.log("Botón de reinicio mostrado.");
+    }
+    
+    //document.getElementById("golpeSound").play();
+    //document.getElementById("lvlup").play();
     document.addEventListener("keydown", activaMovimiento, false);
     document.addEventListener("keyup", desactivaMovimiento, false);
     document.getElementById("botonMusica").addEventListener("click", toggleMusica);
@@ -552,7 +591,7 @@ window.onload = function () {
     Thorfinn.prototype.imagen = imagen;
 
     miThorfinn = new Thorfinn(x, y);
-    id1 = setInterval(crearThorfinn, 1000 / 70);
+    id1 = setInterval(crearThorfinn, 1000 / 60);
     id2 = setInterval(animacionThorfinn, 1000 / 8);
     id3 = setInterval(loopJuego, 1000 / 60);
     id4 = setInterval(actualizarDificultad, 1000);
