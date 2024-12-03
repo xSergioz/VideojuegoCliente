@@ -6,9 +6,12 @@ window.onload = function () {
     const TOPABAJO = 140;
     const TOPEINFERIORBORRADO = 520;
     const gravedad = 1.5;
+    const flechas = [];
+    
     let Vsalto;
     let historialPuntuaciones = [];
     let historialNiveles = [];
+    
 
     let x = 0;
     let y = 100;
@@ -34,7 +37,6 @@ window.onload = function () {
 
     let CDTimer;
 
-    const flechas = [];
     let nivel = 1;
 
     let tiempoInicio = Date.now();
@@ -53,6 +55,9 @@ window.onload = function () {
     function cargarHistorial() {
         historialPuntuaciones = JSON.parse(localStorage.getItem('historialPuntuaciones')) || [];
         historialNiveles = JSON.parse(localStorage.getItem('historialNiveles')) || [];
+        console.log("Historial cargado:");
+        console.log("Puntuaciones:", historialPuntuaciones);
+        console.log("Niveles:", historialNiveles);
     }
 
     function guardarHistorial() {
@@ -74,8 +79,13 @@ window.onload = function () {
                 tiempo: puntuacion,
                 nivel: historialNiveles[index],
             }))
-            .sort((a, b) => a.tiempo - b.tiempo) // Ordenar de menor a mayor tiempo
-            .slice(0, 5); // Mostrar solo los 5 mejores
+            .sort((a, b) => {
+                if (b.tiempo === a.tiempo) {
+                    return b.nivel - a.nivel; //Si los tiempos son iguales, ordenar por nivel
+                }
+                return b.tiempo - a.tiempo; //Ordenar por tiempo descendente
+            })
+            .slice(0, 5); //Mostrar solo los 5 mejores
     
         mejoresTiempos.forEach((record, index) => {
             const recordItem = document.createElement("li");
@@ -90,6 +100,8 @@ window.onload = function () {
     function mostrarRecords() {
     
         const nuevoRecord = (tiempoFin - tiempoInicio) / 1000; // Convertir a segundos
+        console.log("Mostrando récords...");
+        console.log("Historial de niveles al mostrar récords:", historialNiveles); 
     
         historialPuntuaciones.push(nuevoRecord);
         historialNiveles.push(nivel);
@@ -451,12 +463,15 @@ window.onload = function () {
         partidaTerminada = true; //Marca la partida como terminada
     
         clearInterval(intervaloJuego); //Detener todos los intervalos
+        console.log("Guardando récords...");
+        console.log("Nivel actual:", nivel);
         tiempoFin = Date.now(); //Captura el tiempo de finalización
         const tiempoJugado = (tiempoFin - tiempoInicio) / 1000; //Calcula el tiempo jugado
     
         //Guardar puntuación en el historial
         historialPuntuaciones.push(tiempoJugado);
         historialNiveles.push(nivel);
+        console.log("Historial de niveles:", historialNiveles);
         guardarHistorial();
     
         //Mostrar mensajes y actualizar interfaz
@@ -505,7 +520,7 @@ window.onload = function () {
 
     function reiniciarJuego() {
         console.log("Reiniciando juego...");
-    
+        console.log("Nivel antes del reinicio:", nivel);
         //Verifica si la partida ya está terminada
         if (partidaTerminada) {
             console.log("La partida ya ha terminado, reiniciando.");
@@ -517,6 +532,7 @@ window.onload = function () {
             clearInterval(id4);
             clearInterval(id5);
             console.log("Intervalos detenidos.");
+            console.log("Nivel después del reinicio:", nivel); 
     
             //Reiniciar los valores del juego
             nivel = 1;
@@ -527,13 +543,14 @@ window.onload = function () {
             puedeSaltar = true;
             tiempoInicio = Date.now();
             partidaTerminada = false; //Asegúrate de que esta línea está en ejecución
+            partidaRegistrada = false;
     
             //Limpiar el canvas
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             console.log("Canvas limpiado.");
     
             //Re-crear los intervalos del juego
-            id1 = setInterval(crearThorfinn, 1000 / 70);
+            id1 = setInterval(crearThorfinn, 1000 / 60);
             id2 = setInterval(animacionThorfinn, 1000 / 8);
             id3 = setInterval(loopJuego, 1000 / 60);
             id4 = setInterval(actualizarDificultad, 1000);
