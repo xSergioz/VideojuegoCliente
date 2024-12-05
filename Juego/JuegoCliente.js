@@ -55,64 +55,55 @@ window.onload = function () {
     function cargarHistorial() {
         historialPuntuaciones = JSON.parse(localStorage.getItem('historialPuntuaciones')) || [];
         historialNiveles = JSON.parse(localStorage.getItem('historialNiveles')) || [];
-        console.log("Historial cargado:");
-        console.log("Puntuaciones:", historialPuntuaciones);
-        console.log("Niveles:", historialNiveles);
     }
-
+      
     function guardarHistorial() {
-        //Un Set para eliminar duplicados
-        historialPuntuaciones = [...new Set(historialPuntuaciones)];
-        historialNiveles = [...new Set(historialNiveles)];
-    
         localStorage.setItem('historialPuntuaciones', JSON.stringify(historialPuntuaciones));
         localStorage.setItem('historialNiveles', JSON.stringify(historialNiveles));
+        
     }
-
+      
+      // Añade una función para mostrar el historial de puntuaciones
     function mostrarHistorial() {
-        const recordsList = document.getElementById("recordsList");
-        recordsList.innerHTML = ""; //Limpiar la lista
-    
-        //Obtener los 5 mejores tiempos
-        const mejoresTiempos = historialPuntuaciones
-            .map((puntuacion, index) => ({
-                tiempo: puntuacion,
-                nivel: historialNiveles[index],
-            }))
-            .sort((a, b) => {
-                if (b.tiempo === a.tiempo) {
-                    return b.nivel - a.nivel; //Si los tiempos son iguales, ordenar por nivel
-                }
-                return b.tiempo - a.tiempo; //Ordenar por tiempo descendente
-            })
-            .slice(0, 5); //Mostrar solo los 5 mejores
-    
-        mejoresTiempos.forEach((record, index) => {
+		const recordsList = document.getElementById("recordsList");
+		recordsList.innerHTML = ""; // Limpiar la lista
+
+        const historialCombinado = historialPuntuaciones.map((puntuacion, index) => ({
+            puntuacion: puntuacion,
+            nivel: historialNiveles[index]
+        }));
+
+        const mejoresTiempos = historialCombinado.sort((a, b) => {
+            if (b.puntuacion === a.puntuacion) {
+                return b.nivel - a.nivel; // Ordenar por nivel si los tiempos son iguales
+            }
+            return b.puntuacion - a.puntuacion; // Ordenar por tiempo de mayor a menor
+        });
+	  
+		mejoresTiempos.forEach((record, index) => {
             const recordItem = document.createElement("li");
-            const minutos = Math.floor(record.tiempo / 60);
-            const segundos = (record.tiempo % 60).toFixed(2);
-            recordItem.textContent = `#${index + 1}: Tiempo: ${minutos}m ${segundos}s, Nivel: ${record.nivel}`;
+            const minutos = Math.floor(record.puntuacion / 60); // Obtener los minutos
+            const segundos = (record.puntuacion % 60).toFixed(3); // Obtener los segundos
+            recordItem.textContent = `Mejor tiempo ${index + 1}: ${puntuacion.toLocaleString('es', { minimumFractionDigits: 3, maximumFractionDigits: 3 })} segundos - Nivel ${historialNiveles[index]}`;
             recordsList.appendChild(recordItem);
         });
-    }
-    
-
-    function mostrarRecords() {
-    
+	}
+      
+    function mostrarRecords(tiempoInicio, tiempoFin, nivel) {
         const nuevoRecord = (tiempoFin - tiempoInicio) / 1000; // Convertir a segundos
-        console.log("Mostrando récords...");
-        console.log("Historial de niveles al mostrar récords:", historialNiveles); 
     
-        historialPuntuaciones.push(nuevoRecord);
-        historialNiveles.push(nivel);
-    
-        // Actualizar el récord si es el mejor tiempo
+        // Verifica si es un nuevo récord
         if (nuevoRecord > recordTiempo) {
+            historialPuntuaciones.push(nuevoRecord);
+            historialNiveles.push(nivel);
             recordTiempo = nuevoRecord;
         }
     
-        guardarHistorial(); // Guardar cambios
-        mostrarHistorial(); // Mostrar el historial actualizado
+        // Guarda el historial actualizado
+        guardarHistorial();
+    
+        // Muestra el historial actualizado
+        mostrarHistorial();
     }
 
     let plataformas = [
@@ -427,34 +418,23 @@ window.onload = function () {
         }
     }
 
+
     function actualizarDificultad() {
         const tiempoTranscurrido = (new Date() - tiempoInicio) / 1000; //Tiempo transcurrido en segundos
 
         // Aumentar nivel cada 30 segundos
-        if (tiempoTranscurrido >= nivel * 30) {
+        if (tiempoTranscurrido >= nivel * 20) {
             nivel++;
             console.log(`Nivel aumentado a: ${nivel}`);
         
             // Aumenta la dificultad cada vez que el nivel sube
-            velocidadCaida += 0.2; // Aumenta la velocidad de caída
+            velocidadCaida += 0.3; // Aumenta la velocidad de caída
             frecuenciaCaida -= 100; // Reduce el tiempo entre cada flecha
 
             // Si ya tienes un intervalo que crea las flechas, actualízalo
             clearInterval(id5);// Detén el intervalo anterior
             id5 = setInterval(crearFlechas, frecuenciaCaida); // Crea las flechas con nueva frecuencia
             
-        }
-    }
-
-    function guardarRecords() {
-        let puntuacionMaxima = localStorage.getItem("puntuacionMaxima") || 0;
-        let nivelMaximo = localStorage.getItem("nivelMaximo") || 1;
-
-        if (nivel > nivelMaximo) {
-            localStorage.setItem("nivelMaximo", nivel);
-        }
-        if (tiempoFin < puntuacionMaxima || puntuacionMaxima === 0) {
-            localStorage.setItem("puntuacionMaxima", tiempoFin);
         }
     }
 
@@ -520,53 +500,51 @@ window.onload = function () {
 
     function reiniciarJuego() {
         console.log("Reiniciando juego...");
-        console.log("Nivel antes del reinicio:", nivel);
-        //Verifica si la partida ya está terminada
         if (partidaTerminada) {
-            console.log("La partida ya ha terminado, reiniciando.");
-            
-            //Detener todos los intervalos activos antes de iniciar nuevos
+            // Detener intervalos y reiniciar estado del juego
             clearInterval(id1);
             clearInterval(id2);
             clearInterval(id3);
             clearInterval(id4);
             clearInterval(id5);
-            console.log("Intervalos detenidos.");
-            console.log("Nivel después del reinicio:", nivel); 
     
-            //Reiniciar los valores del juego
-            nivel = 1;
+            
+    
+            // Sincronizar historial de puntuaciones y niveles
+    
+            console.log("Datos después de sincronización:");
+            console.log("Puntuaciones:", historialPuntuaciones);
+            console.log("Niveles:", historialNiveles);
+    
+            // Reiniciar otros elementos del juego
+            nivel = 0;
             Vflechas = 1;
-            flechas.length = 0; //Eliminar todas las flechas
+            flechas.length = 0;
             miThorfinn.vida = 3;
             enElAire = false;
             puedeSaltar = true;
             tiempoInicio = Date.now();
-            partidaTerminada = false; //Asegúrate de que esta línea está en ejecución
+            partidaTerminada = false;
             partidaRegistrada = false;
+
+            cargarHistorial();
+            mostrarHistorial();
+            mostrarRecords();
     
-            //Limpiar el canvas
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            console.log("Canvas limpiado.");
     
-            //Re-crear los intervalos del juego
             id1 = setInterval(crearThorfinn, 1000 / 60);
             id2 = setInterval(animacionThorfinn, 1000 / 8);
             id3 = setInterval(loopJuego, 1000 / 60);
             id4 = setInterval(actualizarDificultad, 1000);
             id5 = setInterval(crearFlechas, frecuenciaCaida);
-            console.log("Nuevos intervalos creados.");
     
-            //Ocultar el mensaje de fin del juego
             const mensajeFin = document.getElementById("mensajeFin");
             mensajeFin.style.display = "none";
-            console.log("Mensaje de fin del juego oculto.");
     
-            //Ocultar el botón de reinicio
             const botonReinicio = document.getElementById("botonReiniciar");
             if (botonReinicio) {
-                botonReinicio.style.display = "none"; // Oculta el botón de reinicio después de reiniciar
-                console.log("Botón de reinicio ocultado.");
+                botonReinicio.style.display = "none";
             }
         }
     }
