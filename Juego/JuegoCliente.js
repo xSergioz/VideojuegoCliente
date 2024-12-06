@@ -83,8 +83,8 @@ window.onload = function () {
 		mejoresTiempos.forEach((record, index) => {
             const recordItem = document.createElement("li");
             const minutos = Math.floor(record.puntuacion / 60); // Obtener los minutos
-            const segundos = (record.puntuacion % 60).toFixed(3); // Obtener los segundos
-            recordItem.textContent = `Mejor tiempo ${index + 1}: ${puntuacion.toLocaleString('es', { minimumFractionDigits: 3, maximumFractionDigits: 3 })} segundos - Nivel ${historialNiveles[index]}`;
+            const segundos = (record.puntuacion % 60).toFixed(2); // Obtener los segundos
+            recordItem.textContent = `Mejor tiempo ${index + 1}: ${minutos}m ${segundos}s - Nivel ${record.nivel}`;
             recordsList.appendChild(recordItem);
         });
 	}
@@ -413,11 +413,17 @@ window.onload = function () {
         crearThorfinn();
         actualizarFlechas();
         dibujarFlechas();
+        actualizarInformacion();
         if (partidaTerminada) {
             mostrarBotonReinicio();
         }
     }
 
+    function actualizarInformacion() {
+        document.getElementById('vidas').textContent = `Vidas: ${miThorfinn.vida}`;
+        document.getElementById('tiempo').textContent = `Tiempo: ${((Date.now() - tiempoInicio) / 1000).toFixed(2)}s`;
+        document.getElementById('nivel').textContent = `Nivel: ${nivel}`;
+    }
 
     function actualizarDificultad() {
         const tiempoTranscurrido = (new Date() - tiempoInicio) / 1000; //Tiempo transcurrido en segundos
@@ -570,6 +576,7 @@ window.onload = function () {
     document.addEventListener("keydown", activaMovimiento, false);
     document.addEventListener("keyup", desactivaMovimiento, false);
     document.getElementById("botonMusica").addEventListener("click", toggleMusica);
+
 
     canvas = document.getElementById("miCanvas");
     ctx = canvas.getContext("2d");

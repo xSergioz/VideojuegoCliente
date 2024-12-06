@@ -27,3 +27,9 @@ html, body {
 #records {
     text-align: center;
 }
+
+#informacion p {
+    display: inline;
+    margin-right: 10px;
+    font-size: 32px;
+}
