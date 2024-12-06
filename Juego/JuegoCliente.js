@@ -138,8 +138,8 @@ window.onload = function () {
     function Flecha (x__, y__, velocidad__) {
         this.x = x__;
         this.y = y__;
-        this.ancho = 10;
-        this.alto = 30;
+        this.ancho = 8;
+        this.alto = 25;
         this.velocidad = velocidad__;
     }
 
