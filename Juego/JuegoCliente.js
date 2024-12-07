@@ -87,6 +87,12 @@ window.onload = function () {
             recordItem.textContent = `Mejor tiempo ${index + 1}: ${minutos}m ${segundos}s - Nivel ${record.nivel}`;
             recordsList.appendChild(recordItem);
         });
+
+        const top5 = historialCombinado.slice(0, 5);
+
+        historialPuntuaciones = top5.map(record => record.puntuacion);
+        historialNiveles = top5.map(record => record.nivel);
+
 	}
       
     function mostrarRecords(tiempoInicio, tiempoFin, nivel) {
@@ -129,7 +135,7 @@ window.onload = function () {
         this.animacionThorfinn = [[4,202],[26,202]];
         this.animacionIddle = [[4,202],[26,202],[47,202],[69,202]];
         this.animacionIddleIzquierda = [[88,1048],[66,1048],[44,1048],[22,1048]];
-        this.velocidad = 1.5;
+        this.velocidad = 1.2;
         this.tamañoX = 23;
         this.tamañoY = 42;
         this.vida = 3;
@@ -198,7 +204,7 @@ window.onload = function () {
                 clearInterval(saltoInterval);
                 
                 this.y = alturaSuelo;
-
+    
                 iniciarCD();
             }
             plataformas.forEach(plataforma => {
@@ -214,6 +220,7 @@ window.onload = function () {
                     clearInterval(saltoInterval);
                 }
             });
+            document.getElementById("salto").play();
         }, 15); 
     }
 
@@ -248,6 +255,7 @@ window.onload = function () {
             if (detectarColision(flecha, miThorfinn)) {
                 miThorfinn.vida--;
                 flechas.splice(i, 1);
+                document.getElementById("hit").play();
                 if (miThorfinn.vida <= 0) terminarJuego();
             }
     
@@ -364,7 +372,6 @@ window.onload = function () {
                 posicion = (posicion + 1) % 4;
                 miThorfinn.animacionThorfinn = miThorfinn.animacionIddle;
             }
-            //posicion = (posicion + 1) % 4;
         }
     }
 
@@ -431,8 +438,6 @@ window.onload = function () {
         // Aumentar nivel cada 30 segundos
         if (tiempoTranscurrido >= nivel * 20) {
             nivel++;
-            console.log(`Nivel aumentado a: ${nivel}`);
-        
             // Aumenta la dificultad cada vez que el nivel sube
             velocidadCaida += 0.3; // Aumenta la velocidad de caída
             frecuenciaCaida -= 100; // Reduce el tiempo entre cada flecha
@@ -449,15 +454,13 @@ window.onload = function () {
         partidaTerminada = true; //Marca la partida como terminada
     
         clearInterval(intervaloJuego); //Detener todos los intervalos
-        console.log("Guardando récords...");
-        console.log("Nivel actual:", nivel);
+
         tiempoFin = Date.now(); //Captura el tiempo de finalización
         const tiempoJugado = (tiempoFin - tiempoInicio) / 1000; //Calcula el tiempo jugado
     
         //Guardar puntuación en el historial
         historialPuntuaciones.push(tiempoJugado);
         historialNiveles.push(nivel);
-        console.log("Historial de niveles:", historialNiveles);
         guardarHistorial();
     
         //Mostrar mensajes y actualizar interfaz
@@ -476,7 +479,7 @@ window.onload = function () {
     function mostrarFinDelJuego(tiempoJugado) {
         partidaTerminada = true;
         const mensajeFin = document.getElementById("mensajeFin");
-        mensajeFin.textContent = `¡Fin del juego! Duraste ${tiempoJugado.toFixed(2)} segundos.`;
+        mensajeFin.textContent = "¡Fin del juego! Te quedastes sin vidas";
         mensajeFin.style.display = "block";
     }
 
@@ -505,7 +508,7 @@ window.onload = function () {
     }
 
     function reiniciarJuego() {
-        console.log("Reiniciando juego...");
+
         if (partidaTerminada) {
             // Detener intervalos y reiniciar estado del juego
             clearInterval(id1);
@@ -514,18 +517,14 @@ window.onload = function () {
             clearInterval(id4);
             clearInterval(id5);
     
-            
-    
-            // Sincronizar historial de puntuaciones y niveles
-    
-            console.log("Datos después de sincronización:");
-            console.log("Puntuaciones:", historialPuntuaciones);
-            console.log("Niveles:", historialNiveles);
-    
             // Reiniciar otros elementos del juego
             nivel = 0;
             Vflechas = 1;
-            flechas.length = 0;
+            flechas.length= 0;
+            flechas.forEach(flecha => {
+                flecha.x = 0;
+                flecha.y = 0;
+            });
             miThorfinn.vida = 3;
             enElAire = false;
             puedeSaltar = true;
@@ -559,16 +558,14 @@ window.onload = function () {
     //Verifica que la función que termina el juego también esté gestionando correctamente el estado de partidaTerminada
     function finDelJuego() {
         partidaTerminada = true; //Aquí deberías asegurarte de que esta línea esté ejecutándose correctamente
-        console.log("Partida terminada.");
     
         //Mostrar mensaje de fin del juego
         const mensaje = document.getElementById("mensajeFin");
         mensaje.innerHTML = "¡Juego terminado!";
         mensaje.style.display = "block";
-        console.log("Mensaje de fin del juego mostrado.");
+        
     
         mostrarBotonReinicio(); //Mostrar el botón de reiniciar
-        console.log("Botón de reinicio mostrado.");
     }
     
     //document.getElementById("golpeSound").play();

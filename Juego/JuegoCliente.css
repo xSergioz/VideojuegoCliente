@@ -15,6 +15,11 @@ html, body {
     margin: 0;
 }
 
+#botonReiniciar {
+    display: none;
+    text-align: center;
+}
+
 .contenedor-canvas {
     display: grid;
     place-items: center;
@@ -42,10 +47,6 @@ html, body {
     text-align: center;
 }
 
-#botonReiniciar {
-    display: none;
-    text-align: center;
-}
 
 #texto{
     color: white;
