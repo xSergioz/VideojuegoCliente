@@ -2,9 +2,7 @@ window.onload = function () {
 
     const TOPEDERECHA = 280;
     const TOPIZQUIERDA = 0;
-    const TOPARRIBA = 0;
     const TOPABAJO = 140;
-    const TOPEINFERIORBORRADO = 520;
     const gravedad = 1.5;
     const flechas = [];
     
@@ -23,14 +21,11 @@ window.onload = function () {
     let canvas;
 
     let imagen; let imagenSuelo; let imagenFlecha;
-    let xSuelo = -1;
     let ySuelo = 140;
     let miThorfinn; 
     let id1, id2, id3, id4, id5;
 
     let xIzquierda, xDerecha, Ataque;
-    let vida = 3;
-    let salto;
     let enElAire = false;
     let puedeSaltar = true;
     let ultimaDireccion;
@@ -43,12 +38,11 @@ window.onload = function () {
     let tiempoFin = null;
 
 	let recordTiempo;
-    let Vflechas = 1;
+    let Vflechas = 1;//Velocidad Flechas
 
     let velocidadCaida = 1; //Velocidad inicial de las flechas
     let frecuenciaCaida = 1000; //Frecuencia inicial para la creación de flechas (en milisegundos)
     let intervaloJuego;
-    let partidaRegistrada = false;
     let partidaTerminada = false;
 
 
@@ -63,10 +57,9 @@ window.onload = function () {
         
     }
       
-      // Añade una función para mostrar el historial de puntuaciones
     function mostrarHistorial() {
 		const recordsList = document.getElementById("recordsList");
-		recordsList.innerHTML = ""; // Limpiar la lista
+		recordsList.innerHTML = ""; //Limpiar la lista
 
         const historialCombinado = historialPuntuaciones.map((puntuacion, index) => ({
             puntuacion: puntuacion,
@@ -75,15 +68,15 @@ window.onload = function () {
 
         const mejoresTiempos = historialCombinado.sort((a, b) => {
             if (b.puntuacion === a.puntuacion) {
-                return b.nivel - a.nivel; // Ordenar por nivel si los tiempos son iguales
+                return b.nivel - a.nivel; //Ordenar por nivel si los tiempos son iguales
             }
-            return b.puntuacion - a.puntuacion; // Ordenar por tiempo de mayor a menor
+            return b.puntuacion - a.puntuacion; //Ordenar por tiempo de mayor a menor
         });
 	  
 		mejoresTiempos.forEach((record, index) => {
             const recordItem = document.createElement("li");
-            const minutos = Math.floor(record.puntuacion / 60); // Obtener los minutos
-            const segundos = (record.puntuacion % 60).toFixed(2); // Obtener los segundos
+            const minutos = Math.floor(record.puntuacion / 60); //Obtener los minutos
+            const segundos = (record.puntuacion % 60).toFixed(2); //Obtener los segundos
             recordItem.textContent = `Mejor tiempo ${index + 1}: ${minutos}m ${segundos}s - Nivel ${record.nivel}`;
             recordsList.appendChild(recordItem);
         });
@@ -96,19 +89,19 @@ window.onload = function () {
 	}
       
     function mostrarRecords(tiempoInicio, tiempoFin, nivel) {
-        const nuevoRecord = (tiempoFin - tiempoInicio) / 1000; // Convertir a segundos
+        const nuevoRecord = (tiempoFin - tiempoInicio) / 1000;
     
-        // Verifica si es un nuevo récord
+        //Verifica si es un nuevo récord
         if (nuevoRecord > recordTiempo) {
             historialPuntuaciones.push(nuevoRecord);
             historialNiveles.push(nivel);
             recordTiempo = nuevoRecord;
         }
     
-        // Guarda el historial actualizado
+        //Guarda el historial actualizado
         guardarHistorial();
     
-        // Muestra el historial actualizado
+        //Muestra el historial actualizado
         mostrarHistorial();
     }
 
@@ -118,7 +111,7 @@ window.onload = function () {
     ];
 
     function dibujarSuelo(){
-        //const ySuelo = TOPABAJO;
+        
         const alturaSuelo = canvas.height - ySuelo;
         const anchoImagen = 100;
         const cantidadImagen = Math.ceil(canvas.width / anchoImagen);
@@ -126,7 +119,6 @@ window.onload = function () {
         for (let i = 0; i < cantidadImagen; i++) {
             ctx.drawImage(imagenSuelo, 3, 1, anchoImagen, alturaSuelo, i * anchoImagen, ySuelo, anchoImagen, alturaSuelo);
         }
-        //ctx.drawImage(imagenSuelo, -3, 141, 100, alturaSuelo);
     }
 
     function Thorfinn (x_, y_) {
@@ -179,11 +171,13 @@ window.onload = function () {
     Thorfinn.prototype.generaAtaqueDerecha = function() {
         this.animacionThorfinnAtaqueDerecha = [[1,362],[34,362],[70,362],[116,362],[157,362]];
         this.animacionThorfinn = this.animacionThorfinnAtaqueDerecha;
+        document.getElementById("espada").play();
     }
 
     Thorfinn.prototype.generaAtaqueIzquierda = function() {
         this.animacionThorfinnAtaqueIzquierda = [[176,781],[142,781],[87,781],[44,781],[18,781]];
         this.animacionThorfinn = this.animacionThorfinnAtaqueIzquierda;
+        document.getElementById("espada").play();
     }
 
     Thorfinn.prototype.generaPosicionSalto = function () {
@@ -227,13 +221,18 @@ window.onload = function () {
     function iniciarCD() {
         puedeSaltar = false;
         let CD = 3;
+        const cdDisplay = document.getElementById("cdSalto");
+        cdDisplay.textContent = `${CD}s`;
     
         CDTimer = setInterval(() => {
             CD--;
     
-            if (CD < 1) {
+            if (CD > 0) {
+                cdDisplay.textContent = `${CD}s`; // Actualiza el contador
+            } else {
                 clearInterval(CDTimer);
                 puedeSaltar = true;
+                cdDisplay.textContent = "Listo"; // Indica que el salto está disponible
             }
         }, 1000);
     }
@@ -330,7 +329,7 @@ window.onload = function () {
     }
 
     function dibujarPlataformas() {
-        const anchoImagen = 100; // Ancho del fragmento del sprite del suelo
+        const anchoImagen = 100; //Ancho del fragmento del sprite del suelo
     
         plataformas.forEach(plataforma => {
             const cantidadImagen = Math.ceil(plataforma.ancho / anchoImagen);
@@ -416,6 +415,7 @@ window.onload = function () {
         }
     }
 
+    //Función para ir limpiando lo que no se ve, y que no consuma muchos recursos mientras se juega
     function loopJuego() {
         crearThorfinn();
         actualizarFlechas();
@@ -427,24 +427,26 @@ window.onload = function () {
     }
 
     function actualizarInformacion() {
+
+        //Informacion del estado del juego
         document.getElementById('vidas').textContent = `Vidas: ${miThorfinn.vida}`;
         document.getElementById('tiempo').textContent = `Tiempo: ${((Date.now() - tiempoInicio) / 1000).toFixed(2)}s`;
         document.getElementById('nivel').textContent = `Nivel: ${nivel}`;
     }
 
     function actualizarDificultad() {
-        const tiempoTranscurrido = (new Date() - tiempoInicio) / 1000; //Tiempo transcurrido en segundos
+        const tiempoTranscurrido = (new Date() - tiempoInicio) / 1000; //Tiempo transcurrido
 
-        // Aumentar nivel cada 30 segundos
+        //Aumentar nivel cada 20 segundos
         if (tiempoTranscurrido >= nivel * 20) {
-            nivel++;
-            // Aumenta la dificultad cada vez que el nivel sube
-            velocidadCaida += 0.3; // Aumenta la velocidad de caída
-            frecuenciaCaida -= 100; // Reduce el tiempo entre cada flecha
+            nivel++ && document.getElementById("lvlup").play();
+            //Aumenta la velocidad de caída
+            velocidadCaida += 0.3;
+            //Reduce el tiempo entre cada flecha
+            frecuenciaCaida -= 100;
 
-            // Si ya tienes un intervalo que crea las flechas, actualízalo
-            clearInterval(id5);// Detén el intervalo anterior
-            id5 = setInterval(crearFlechas, frecuenciaCaida); // Crea las flechas con nueva frecuencia
+            clearInterval(id5);
+            id5 = setInterval(crearFlechas, frecuenciaCaida); //Crea las flechas con nueva frecuencia
             
         }
     }
@@ -462,6 +464,8 @@ window.onload = function () {
         historialPuntuaciones.push(tiempoJugado);
         historialNiveles.push(nivel);
         guardarHistorial();
+        //Sonido de muerte
+        document.getElementById("death").play();
     
         //Mostrar mensajes y actualizar interfaz
         mostrarFinDelJuego(tiempoJugado);
@@ -475,11 +479,11 @@ window.onload = function () {
         clearInterval(id4);
         clearInterval(id5);
     }
-
+    //Mostrar el mensaje cuando se terminé una partida
     function mostrarFinDelJuego(tiempoJugado) {
         partidaTerminada = true;
         const mensajeFin = document.getElementById("mensajeFin");
-        mensajeFin.textContent = "¡Fin del juego! Te quedastes sin vidas";
+        mensajeFin.textContent = "¡Fin de la partida! Te quedastes sin vidas";
         mensajeFin.style.display = "block";
     }
 
@@ -494,7 +498,7 @@ window.onload = function () {
     function toggleMusica(){
         let musica = document.getElementById("musicaFondo");
         let boton = document.getElementById("botonMusica");
-
+        //Para parar e iniciar la música cuando uno quiera
         if (musica.paused) {
             musica.play();
             boton.textContent = "Pausar Música";
@@ -510,17 +514,17 @@ window.onload = function () {
     function reiniciarJuego() {
 
         if (partidaTerminada) {
-            // Detener intervalos y reiniciar estado del juego
+            //Detener intervalos
             clearInterval(id1);
             clearInterval(id2);
             clearInterval(id3);
             clearInterval(id4);
             clearInterval(id5);
     
-            // Reiniciar otros elementos del juego
+            //Reiniciar los parámetros del juego
             nivel = 0;
             Vflechas = 1;
-            flechas.length= 0;
+            flechas.splice(0, flechas.length);
             flechas.forEach(flecha => {
                 flecha.x = 0;
                 flecha.y = 0;
@@ -531,13 +535,15 @@ window.onload = function () {
             tiempoInicio = Date.now();
             partidaTerminada = false;
             partidaRegistrada = false;
+            frecuenciaCaida = 1000;
+            velocidadCaida = 1;
 
             cargarHistorial();
             mostrarHistorial();
             mostrarRecords();
     
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
+            //Iniciar intervalos
             id1 = setInterval(crearThorfinn, 1000 / 60);
             id2 = setInterval(animacionThorfinn, 1000 / 8);
             id3 = setInterval(loopJuego, 1000 / 60);
@@ -568,8 +574,6 @@ window.onload = function () {
         mostrarBotonReinicio(); //Mostrar el botón de reiniciar
     }
     
-    //document.getElementById("golpeSound").play();
-    //document.getElementById("lvlup").play();
     document.addEventListener("keydown", activaMovimiento, false);
     document.addEventListener("keyup", desactivaMovimiento, false);
     document.getElementById("botonMusica").addEventListener("click", toggleMusica);

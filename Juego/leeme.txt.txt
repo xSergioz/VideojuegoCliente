@@ -1,0 +1,5 @@
+Controles: moverse con las flechas <- -> , salto con flecha arriba, atacar con la barra espaciadora.
+
+El objetivo del juego: Tienes 3 vidas, tienes que esquivar las flechas, cuando las pierdas, el juego se acaba.
+
+En un futuro añadiré que salgan enemigos por los laterales y tengas que matarlos mientras esquivas las flechas.

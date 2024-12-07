@@ -14,10 +14,17 @@ html, body {
     height: 100%;
     margin: 0;
 }
-
+#salto{
+    color:white;
+    font-size: 20px;
+}
 #botonReiniciar {
     display: none;
     text-align: center;
+    font-size: 20px;
+}
+#botonMusica {
+    font-size: 20px;
 }
 
 .contenedor-canvas {
